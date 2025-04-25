@@ -1,61 +1,72 @@
 package com.example.glstock.controller;
 
+import com.example.glstock.model.Categoria;
 import com.example.glstock.model.Producto;
+import com.example.glstock.service.CategoriaService;
 import com.example.glstock.service.ProductoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/productos")
+@RequiredArgsConstructor
 public class ProductoController {
 
-    @Autowired
-    private ProductoService productoService;
+    private final ProductoService productoService;
+    private final CategoriaService categoriaService;
 
-    // 🔍 Listar todos los productos (admin + gestor)
     @GetMapping
-    public List<Producto> listar() {
-        return productoService.listarTodos();
+    public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre) {
+        return ResponseEntity.ok(productoService.buscarPorNombre(nombre));
     }
 
-    // 🔍 Buscar por nombre (admin + gestor)
-    @GetMapping("/buscar/nombre")
-    public List<Producto> buscarPorNombre(@RequestParam String nombre) {
-        return productoService.buscarPorNombre(nombre);
+    @GetMapping("/categoria/{idCategoria}")
+    public ResponseEntity<List<Producto>> buscarPorCategoria(@PathVariable Long idCategoria) {
+        Optional<Categoria> categoria = categoriaService.buscarPorId(idCategoria);
+        return categoria.map(c -> ResponseEntity.ok(productoService.buscarPorCategoria(c)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // 🔍 Buscar por categoría (admin + gestor)
-    @GetMapping("/buscar/categoria")
-    public List<Producto> buscarPorCategoria(@RequestParam String categoria) {
-        return productoService.buscarPorCategoria(categoria);
+    @GetMapping("/menor-stock")
+    public ResponseEntity<List<Producto>> productosMenorStock() {
+        return ResponseEntity.ok(productoService.productosMenorStock());
     }
 
-    // ✅ Crear producto (solo admin)
+    @GetMapping("/recientes")
+    public ResponseEntity<List<Producto>> productosRecientes() {
+        return ResponseEntity.ok(productoService.productosRecientes());
+    }
+
     @PostMapping
-    public ResponseEntity<Producto> crear(@RequestBody Producto producto) {
-        return ResponseEntity.ok(productoService.crearProducto(producto));
+    public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
+        return ResponseEntity.ok(productoService.guardar(producto));
     }
 
-    // ✅ Actualizar producto (solo admin)
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizar(@PathVariable Long id, @RequestBody Producto producto) {
-        if (!productoService.existePorId(id)) {
+    public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @RequestBody Producto productoActualizado) {
+        Optional<Producto> productoOpt = productoService.buscarPorId(id);
+        if (productoOpt.isPresent()) {
+            Producto producto = productoOpt.get();
+            producto.setNombre(productoActualizado.getNombre());
+            producto.setDescripcion(productoActualizado.getDescripcion());
+            producto.setCategoria(productoActualizado.getCategoria());
+            producto.setPrecio(productoActualizado.getPrecio());
+            producto.setCantidad(productoActualizado.getCantidad());
+            producto.setFechaIngreso(productoActualizado.getFechaIngreso());
+            producto.setUrlImagen(productoActualizado.getUrlImagen());
+            return ResponseEntity.ok(productoService.guardar(producto));
+        } else {
             return ResponseEntity.notFound().build();
         }
-        producto.setId(id);
-        return ResponseEntity.ok(productoService.actualizarProducto(producto));
     }
 
-    // ✅ Eliminar producto (solo admin)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (!productoService.existePorId(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        productoService.eliminarProducto(id);
+    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
+        productoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 }

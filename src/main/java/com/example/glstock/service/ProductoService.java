@@ -1,50 +1,49 @@
 package com.example.glstock.service;
 
+import com.example.glstock.model.Categoria;
 import com.example.glstock.model.Producto;
 import com.example.glstock.repository.ProductoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductoService {
 
-    @Autowired
-    private ProductoRepository productoRepository;
+    private final ProductoRepository productoRepository;
 
-    public Producto crearProducto(Producto producto) {
-        producto.setFechaIngreso(LocalDate.now());
-        return productoRepository.save(producto);
+    public List<Producto> buscarTodos() {
+        return productoRepository.findAll();
     }
 
-    public List<Producto> listarTodos() {
-        return productoRepository.findAll();
+    public Optional<Producto> buscarPorId(Long id) {
+        return productoRepository.findById(id);
     }
 
     public List<Producto> buscarPorNombre(String nombre) {
         return productoRepository.findByNombreContainingIgnoreCase(nombre);
     }
 
-    public List<Producto> buscarPorCategoria(String categoria) {
-        return productoRepository.findByCategoriaIgnoreCase(categoria);
+    public List<Producto> buscarPorCategoria(Categoria categoria) {
+        return productoRepository.findByCategoria(categoria);
     }
 
-    public Optional<Producto> obtenerPorId(Long id) {
-        return productoRepository.findById(id);
+    public List<Producto> productosMenorStock() {
+        return productoRepository.findTop5ByOrderByCantidadAsc();
     }
 
-    public Producto actualizarProducto(Producto producto) {
+    public List<Producto> productosRecientes() {
+        return productoRepository.findTop5ByOrderByFechaIngresoDesc();
+    }
+
+    public Producto guardar(Producto producto) {
         return productoRepository.save(producto);
     }
 
-    public void eliminarProducto(Long id) {
+    public void eliminar(Long id) {
         productoRepository.deleteById(id);
-    }
-
-    public boolean existePorId(Long id) {
-        return productoRepository.existsById(id);
     }
 }

@@ -2,8 +2,7 @@ package com.example.glstock.controller;
 
 import com.example.glstock.model.Movimiento;
 import com.example.glstock.service.MovimientoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,35 +11,25 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/movimientos")
+@RequiredArgsConstructor
 public class MovimientoController {
 
-    @Autowired
-    private MovimientoService movimientoService;
+    private final MovimientoService movimientoService;
 
-    // Registrar entrada o salida
     @PostMapping
-    public ResponseEntity<Movimiento> registrar(@RequestBody Movimiento movimiento) {
+    public ResponseEntity<Movimiento> registrarMovimiento(@RequestBody Movimiento movimiento) {
         return ResponseEntity.ok(movimientoService.registrarMovimiento(movimiento));
     }
 
-    // Listar todos los movimientos
-    @GetMapping
-    public List<Movimiento> listar() {
-        return movimientoService.listarTodos();
-    }
-
-    // Últimos 10 días
     @GetMapping("/ultimos-10-dias")
-    public List<Movimiento> ultimos10Dias() {
-        return movimientoService.obtenerUltimos10Dias();
+    public ResponseEntity<List<Movimiento>> movimientosUltimos10Dias() {
+        return ResponseEntity.ok(movimientoService.movimientosUltimos10Dias());
     }
 
-    // Por rango personalizado (fecha formato ISO: yyyy-MM-ddTHH:mm:ss)
-    @GetMapping("/filtrar/por-fechas")
-    public List<Movimiento> porRangoDeFechas(
-            @RequestParam("desde") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime desde,
-            @RequestParam("hasta") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime hasta
-    ) {
-        return movimientoService.filtrarPorRango(desde, hasta);
+    @GetMapping("/rango")
+    public ResponseEntity<List<Movimiento>> movimientosPorRango(
+            @RequestParam LocalDateTime inicio,
+            @RequestParam LocalDateTime fin) {
+        return ResponseEntity.ok(movimientoService.movimientosEntreFechas(inicio, fin));
     }
 }

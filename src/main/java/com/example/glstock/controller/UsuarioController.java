@@ -3,56 +3,49 @@ package com.example.glstock.controller;
 
 import com.example.glstock.model.Usuario;
 import com.example.glstock.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
+@RequiredArgsConstructor
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-    // 🔐 Registrar nuevo usuario (solo ADMIN)
-    @PostMapping("/registro")
-    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
-        return ResponseEntity.ok(usuarioService.registrarUsuario(usuario));
+    @PostMapping
+    public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario) {
+        return ResponseEntity.ok(usuarioService.guardar(usuario));
     }
 
-    // 🔐 Listar todos los usuarios (solo ADMIN)
-    @GetMapping
-    public List<Usuario> listar() {
-        return usuarioService.listarTodos();
-    }
-
-    // 🔐 Obtener usuario por ID (solo ADMIN)
-    @GetMapping("/{id}")
-    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Long id) {
-        return usuarioService.obtenerPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // 🔐 Editar usuario (solo ADMIN)
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizar(@PathVariable Long id, @RequestBody Usuario usuario) {
-        if (!usuarioService.existePorId(id)) {
+    public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
+        Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            usuario.setNombre(usuarioActualizado.getNombre());
+            usuario.setApellido(usuarioActualizado.getApellido());
+            usuario.setCorreo(usuarioActualizado.getCorreo());
+            usuario.setContrasena(usuarioActualizado.getContrasena());
+            usuario.setRol(usuarioActualizado.getRol());
+            return ResponseEntity.ok(usuarioService.guardar(usuario));
+        } else {
             return ResponseEntity.notFound().build();
         }
-        usuario.setId(id);
-        return ResponseEntity.ok(usuarioService.actualizarUsuario(usuario));
     }
 
-    // 🔐 Eliminar usuario (solo ADMIN)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (!usuarioService.existePorId(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        usuarioService.eliminarUsuario(id);
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
+        usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Usuario>> buscarUsuariosPorNombre(@RequestParam String nombre) {
+        return ResponseEntity.ok(usuarioService.buscarPorNombre(nombre));
     }
 }

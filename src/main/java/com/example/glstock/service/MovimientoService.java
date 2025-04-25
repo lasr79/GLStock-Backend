@@ -3,54 +3,52 @@ package com.example.glstock.service;
 import com.example.glstock.model.Movimiento;
 import com.example.glstock.model.Producto;
 import com.example.glstock.repository.MovimientoRepository;
-import com.example.glstock.repository.ProductoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class MovimientoService {
 
-    @Autowired
-    private MovimientoRepository movimientoRepository;
+    private final MovimientoRepository movimientoRepository;
+    private final ProductoService productoService;
 
-    @Autowired
-    private ProductoRepository productoRepository;
-
-    // Registrar entrada o salida
     public Movimiento registrarMovimiento(Movimiento movimiento) {
-        Producto producto = productoRepository.findById(movimiento.getProducto().getId())
+        // Buscar el producto
+        Producto producto = productoService.buscarPorId(movimiento.getProducto().getId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        if (movimiento.getTipo().name().equalsIgnoreCase("entrada")) {
-            producto.setCantidad(producto.getCantidad() + movimiento.getCantidad());
-        } else if (movimiento.getTipo().name().equalsIgnoreCase("salida")) {
-            if (producto.getCantidad() < movimiento.getCantidad()) {
-                throw new RuntimeException("Stock insuficiente para salida");
+        // Lógica del stock según el tipo de movimiento
+        switch (movimiento.getTipo()) {
+            case ENTRADA -> producto.setCantidad(producto.getCantidad() + movimiento.getCantidad());
+            case SALIDA -> {
+                if (producto.getCantidad() < movimiento.getCantidad()) {
+                    throw new RuntimeException("Stock insuficiente");
+                }
+                producto.setCantidad(producto.getCantidad() - movimiento.getCantidad());
             }
-            producto.setCantidad(producto.getCantidad() - movimiento.getCantidad());
         }
 
-        productoRepository.save(producto);
-        movimiento.setFecha(LocalDateTime.now());
+        // Guardar el nuevo stock del producto
+        productoService.guardar(producto);
+
+        // Guardar el movimiento
         return movimientoRepository.save(movimiento);
     }
 
-    // Listar todos
-    public List<Movimiento> listarTodos() {
-        return movimientoRepository.findAll();
+    public List<Movimiento> buscarPorProducto(Producto producto) {
+        return movimientoRepository.findByProducto(producto);
     }
 
-    // Últimos 10 días
-    public List<Movimiento> obtenerUltimos10Dias() {
-        LocalDateTime hace10Dias = LocalDateTime.now().minusDays(10);
-        return movimientoRepository.findByFechaAfterOrderByFechaDesc(hace10Dias);
+    public List<Movimiento> movimientosUltimos10Dias() {
+        LocalDateTime hace10dias = LocalDateTime.now().minusDays(10);
+        return movimientoRepository.findByFechaAfter(hace10dias);
     }
 
-    // Por rango personalizado
-    public List<Movimiento> filtrarPorRango(LocalDateTime desde, LocalDateTime hasta) {
-        return movimientoRepository.findByFechaBetweenOrderByFechaDesc(desde, hasta);
+    public List<Movimiento> movimientosEntreFechas(LocalDateTime inicio, LocalDateTime fin) {
+        return movimientoRepository.findByFechaBetween(inicio, fin);
     }
 }
