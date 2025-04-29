@@ -19,4 +19,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
     // Últimos productos agregados
     List<Producto> findTop5ByOrderByFechaIngresoDesc();
+
+    List<Producto> findByCantidadLessThan(int cantidad);
+
 }

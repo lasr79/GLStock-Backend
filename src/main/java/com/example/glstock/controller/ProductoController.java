@@ -7,9 +7,10 @@ import com.example.glstock.service.ProductoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -19,21 +20,26 @@ public class ProductoController {
     private final ProductoService productoService;
     private final CategoriaService categoriaService;
 
-    @GetMapping
-    public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre) {
+    @GetMapping("/buscar")
+    public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre, Authentication authentication) {
+        System.out.println("USUARIO AUTENTICADO: " + authentication.getName());
+        System.out.println("ROLES: " + authentication.getAuthorities());
         return ResponseEntity.ok(productoService.buscarPorNombre(nombre));
     }
 
-    @GetMapping("/categoria/{idCategoria}")
-    public ResponseEntity<List<Producto>> buscarPorCategoria(@PathVariable Long idCategoria) {
+
+    @PostMapping("/categoria")
+    public ResponseEntity<List<Producto>> buscarPorCategoria(@RequestBody Map<String, Long> datos) {
+        Long idCategoria = datos.get("idCategoria");
         Optional<Categoria> categoria = categoriaService.buscarPorId(idCategoria);
         return categoria.map(c -> ResponseEntity.ok(productoService.buscarPorCategoria(c)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/menor-stock")
-    public ResponseEntity<List<Producto>> productosMenorStock() {
-        return ResponseEntity.ok(productoService.productosMenorStock());
+    @PostMapping("/menor-stock")
+    public ResponseEntity<List<Producto>> productosMenorStock(@RequestBody Map<String, Object> datos) {
+        int limite = Integer.parseInt(datos.getOrDefault("limite", 10).toString());
+        return ResponseEntity.ok(productoService.productosMenorStock(limite));
     }
 
     @GetMapping("/recientes")

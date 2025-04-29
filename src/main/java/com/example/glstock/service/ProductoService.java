@@ -31,8 +31,8 @@ public class ProductoService {
         return productoRepository.findByCategoria(categoria);
     }
 
-    public List<Producto> productosMenorStock() {
-        return productoRepository.findTop5ByOrderByCantidadAsc();
+    public List<Producto> productosMenorStock(int limite) {
+        return productoRepository.findByCantidadLessThan(limite);
     }
 
     public List<Producto> productosRecientes() {
