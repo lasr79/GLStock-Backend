@@ -22,8 +22,6 @@ public class ProductoController {
 
     @GetMapping("/buscar")
     public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre, Authentication authentication) {
-        System.out.println("USUARIO AUTENTICADO: " + authentication.getName());
-        System.out.println("ROLES: " + authentication.getAuthorities());
         return ResponseEntity.ok(productoService.buscarPorNombre(nombre));
     }
 
@@ -41,7 +39,10 @@ public class ProductoController {
         int limite = Integer.parseInt(datos.getOrDefault("limite", 10).toString());
         return ResponseEntity.ok(productoService.productosMenorStock(limite));
     }
-
+    @GetMapping("/stock-menor")
+    public ResponseEntity<List<Producto>> obtenerProductosConMenorStock() {
+        return ResponseEntity.ok(productoService.productosConMenorStock());
+    }
     @GetMapping("/recientes")
     public ResponseEntity<List<Producto>> productosRecientes() {
         return ResponseEntity.ok(productoService.productosRecientes());

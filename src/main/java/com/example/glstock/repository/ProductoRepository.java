@@ -17,7 +17,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     // Productos con menor cantidad de stock (ej: top 5)
     List<Producto> findTop5ByOrderByCantidadAsc();
 
-    // Últimos productos agregados
+    // Últimos productos agregados 5 productos agregados
     List<Producto> findTop5ByOrderByFechaIngresoDesc();
 
     List<Producto> findByCantidadLessThan(int cantidad);
