@@ -17,13 +17,15 @@ public class MovimientoService {
     private final ProductoService productoService;
 
     public Movimiento registrarMovimiento(Movimiento movimiento) {
-        // Buscar el producto
+        // Buscar el producto asociado
         Producto producto = productoService.buscarPorId(movimiento.getProducto().getId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        // Lógica del stock según el tipo de movimiento
+        // Aplicar lógica según el tipo de movimiento
         switch (movimiento.getTipo()) {
-            case ENTRADA -> producto.setCantidad(producto.getCantidad() + movimiento.getCantidad());
+            case ENTRADA -> {
+                producto.setCantidad(producto.getCantidad() + movimiento.getCantidad());
+            }
             case SALIDA -> {
                 if (producto.getCantidad() < movimiento.getCantidad()) {
                     throw new RuntimeException("Stock insuficiente");
@@ -32,8 +34,19 @@ public class MovimientoService {
             }
         }
 
-        // Guardar el nuevo stock del producto
+        // Actualizar producto en base de datos
         productoService.guardar(producto);
+
+        // Asociar el producto actualizado al movimiento
+        movimiento.setProducto(producto);
+
+        // Establecer la fecha si no viene del frontend
+        if (movimiento.getFecha() == null) {
+            movimiento.setFecha(LocalDateTime.now());
+        }
+
+        // Aquí podrías setear el usuario que realiza el movimiento si estás usando seguridad
+        // movimiento.setUsuario(usuarioActual);
 
         // Guardar el movimiento
         return movimientoRepository.save(movimiento);

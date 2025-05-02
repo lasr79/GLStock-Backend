@@ -22,4 +22,5 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
     List<Producto> findByCantidadLessThan(int cantidad);
 
+    List<Producto> findByCategoriaNombreContainingIgnoreCase(String nombreCategoria);
 }

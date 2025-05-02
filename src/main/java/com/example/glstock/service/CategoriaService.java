@@ -18,10 +18,6 @@ public class CategoriaService {
         return categoriaRepository.findAll();
     }
 
-    public Optional<Categoria> buscarPorNombre(String nombre) {
-        return categoriaRepository.findByNombre(nombre);
-    }
-
     public Optional<Categoria> buscarPorId(Long id) {
         return categoriaRepository.findById(id);
     }

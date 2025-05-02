@@ -16,7 +16,7 @@ public class MovimientoController {
 
     private final MovimientoService movimientoService;
 
-    @PostMapping
+    @PostMapping("/registrar")
     public ResponseEntity<Movimiento> registrarMovimiento(@RequestBody Movimiento movimiento) {
         return ResponseEntity.ok(movimientoService.registrarMovimiento(movimiento));
     }

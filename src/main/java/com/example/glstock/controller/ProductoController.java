@@ -5,6 +5,7 @@ import com.example.glstock.model.Producto;
 import com.example.glstock.service.CategoriaService;
 import com.example.glstock.service.ProductoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -47,33 +48,24 @@ public class ProductoController {
     public ResponseEntity<List<Producto>> productosRecientes() {
         return ResponseEntity.ok(productoService.productosRecientes());
     }
-
-    @PostMapping
-    public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
-        return ResponseEntity.ok(productoService.guardar(producto));
+    @GetMapping("/buscar-categoria")
+    public ResponseEntity<List<Producto>> productosPorCategoria(@RequestParam String nombre) {
+        return ResponseEntity.ok(productoService.buscarPorNombreCategoria(nombre));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @RequestBody Producto productoActualizado) {
-        Optional<Producto> productoOpt = productoService.buscarPorId(id);
-        if (productoOpt.isPresent()) {
-            Producto producto = productoOpt.get();
-            producto.setNombre(productoActualizado.getNombre());
-            producto.setDescripcion(productoActualizado.getDescripcion());
-            producto.setCategoria(productoActualizado.getCategoria());
-            producto.setPrecio(productoActualizado.getPrecio());
-            producto.setCantidad(productoActualizado.getCantidad());
-            producto.setFechaIngreso(productoActualizado.getFechaIngreso());
-            producto.setUrlImagen(productoActualizado.getUrlImagen());
-            return ResponseEntity.ok(productoService.guardar(producto));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @PutMapping("/actualizar/{id}")
+    public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
+        Producto actualizado = productoService.actualizar(id, producto);
+        return ResponseEntity.ok(actualizado);
     }
-
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
         productoService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/crear")
+    public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
+        Producto creado = productoService.crearNuevoProducto(producto);
+        return new ResponseEntity<>(creado, HttpStatus.CREATED);
     }
 }

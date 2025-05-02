@@ -17,12 +17,12 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario) {
         return ResponseEntity.ok(usuarioService.guardar(usuario));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/actualizar/{id}")
     public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
         Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
         if (usuarioOpt.isPresent()) {
@@ -38,14 +38,22 @@ public class UsuarioController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
         usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
+    @GetMapping("/buscar-nombre")
     public ResponseEntity<List<Usuario>> buscarUsuariosPorNombre(@RequestParam String nombre) {
         return ResponseEntity.ok(usuarioService.buscarPorNombre(nombre));
+    }
+    @GetMapping("/buscar-correo")
+    public ResponseEntity<List<Usuario>> buscarUsuariosPorCorreo(@RequestParam String correo) {
+        return ResponseEntity.ok(usuarioService.buscarPorCorreoPoniendoCualquierInicial(correo));
+    }
+    @GetMapping("/listar")
+    public ResponseEntity<List<Usuario>> listarUsuarios() {
+        return ResponseEntity.ok(usuarioService.listarTodos());
     }
 }
