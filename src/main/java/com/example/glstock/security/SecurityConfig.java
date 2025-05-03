@@ -60,6 +60,8 @@ public class SecurityConfig {
 
                         // Productos
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").hasAnyRole("ADMIN", "GESTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/productos/menor-stock").hasAnyRole("ADMIN", "GESTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/productos/categoria").hasAnyRole("ADMIN", "GESTOR")
                         .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
