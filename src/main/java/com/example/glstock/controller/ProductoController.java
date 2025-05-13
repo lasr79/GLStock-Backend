@@ -20,7 +20,12 @@ public class ProductoController {
 
     private final ProductoService productoService;
     private final CategoriaService categoriaService;
-
+    @GetMapping("/buscar-id/{id}")
+    public ResponseEntity<Producto> obtenerProductoPorId(@PathVariable Long id) {
+        return productoService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
     @GetMapping("/buscar")
     public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre, Authentication authentication) {
         return ResponseEntity.ok(productoService.buscarPorNombre(nombre));
