@@ -47,9 +47,7 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
-    public List<Usuario> listarTodos() {
-        return usuarioRepository.findAll();
-    }
+
 }
 
 

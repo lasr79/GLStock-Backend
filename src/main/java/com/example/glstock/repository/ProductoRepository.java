@@ -21,7 +21,6 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     // Últimos productos agregados 5 productos agregados
     List<Producto> findTop5ByOrderByFechaIngresoDesc();
 
-    List<Producto> findByCantidadLessThan(int cantidad);
-
+    //Buscar por nombre de categoria sin tener que poner todo el nombre de la categoria 
     List<Producto> findByCategoriaNombreContainingIgnoreCase(String nombreCategoria);
 }

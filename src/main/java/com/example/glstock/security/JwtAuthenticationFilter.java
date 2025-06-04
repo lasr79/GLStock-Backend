@@ -20,7 +20,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
+    // Servicio para manejar token (extraer usuario, validar)
     private final JwtService jwtService;
     private ApplicationContext applicationContext;
 
@@ -29,8 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        System.out.println("🔐 JwtAuthenticationFilter ACTIVADO"); // 👈
-
+        // Inicializa el ApplicationContext si aun no esta disponible
         if (applicationContext == null) {
             applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(request.getServletContext());
         }
@@ -39,24 +38,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String correo;
 
+        // Si no hay token  o no tiene el formato correcto, continua sin autenticar
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("❌ No se encontró header Authorization válido");
             filterChain.doFilter(request, response);
             return;
         }
 
+        // Extrae el token (sin "Bearer) y el correo desde el token
         jwt = authHeader.substring(7);
         correo = jwtService.extractUsername(jwt);
 
-        System.out.println("📨 Token recibido para correo: " + correo); // 👈
-
+        // Si el correo es valido y aún no se ha autenticado el usuario en este request
         if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = applicationContext.getBean(UserDetailsService.class)
                     .loadUserByUsername(correo);
 
+            // Valida el token y establece la autenticacion
             if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
-                System.out.println("✅ Token válido. Estableciendo autenticación para: " + correo); // 👈
-
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -64,12 +62,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                System.out.println("⛔ Token inválido para: " + correo); // 👈
             }
-        } else {
-            System.out.println("⚠️ Ya existe autenticación o correo es null"); // 👈
         }
+
 
         filterChain.doFilter(request, response);
     }

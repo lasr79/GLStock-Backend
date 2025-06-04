@@ -20,23 +20,23 @@ public class MovimientoController {
 
     private final MovimientoService movimientoService;
     private final UsuarioService usuarioService;
+    //Crear nuevos movimientos
     @PostMapping("/registrar")
     public ResponseEntity<Movimiento> registrarMovimiento(
             @RequestBody Movimiento movimiento,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        String correo = userDetails.getUsername(); // recupera el correo del token
-        Usuario usuario = usuarioService.findByCorreo(correo); // obtiene el usuario
-
+        String correo = userDetails.getUsername();
+        Usuario usuario = usuarioService.findByCorreo(correo);
         movimiento.setUsuario(usuario);
         return ResponseEntity.ok(movimientoService.registrarMovimiento(movimiento));
     }
-
-    @GetMapping("/ultimos-10-dias")
-    public ResponseEntity<List<Movimiento>> movimientosUltimos10Dias() {
-        return ResponseEntity.ok(movimientoService.movimientosUltimos10Dias());
+    //Busca los ultimos 10 movimientos agregados
+    @GetMapping("/ultimos-10-movimientos")
+    public ResponseEntity<List<Movimiento>> ultimos10Movimientos() {
+        return ResponseEntity.ok(movimientoService.ultimos10Movimientos());
     }
-
+    //Busca los movimientos por un rango de fechas dadas por el usuario
     @GetMapping("/rango")
     public ResponseEntity<List<Movimiento>> movimientosPorRango(
             @RequestParam LocalDateTime inicio,

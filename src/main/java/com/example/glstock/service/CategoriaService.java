@@ -13,16 +13,15 @@ import java.util.Optional;
 public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
-
+    //Busca todas las categorias
     public List<Categoria> listarTodas() {
         return categoriaRepository.findAll();
     }
-
+    //Busca  por id la categoria
     public Optional<Categoria> buscarPorId(Long id) {
         return categoriaRepository.findById(id);
     }
-
-    // Método añadido para guardar una categoría
+    // Metodo añadido para guardar una categoria
     public Categoria guardar(Categoria categoria) {
         return categoriaRepository.save(categoria);
     }

@@ -21,7 +21,7 @@ public class MovimientoService {
         Producto producto = productoService.buscarPorId(movimiento.getProducto().getId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        // Aplicar lógica según el tipo de movimiento
+        // Selecciona el tipo de movimiento y con un control en caso de no tener stock
         switch (movimiento.getTipo()) {
             case ENTRADA -> {
                 producto.setCantidad(producto.getCantidad() + movimiento.getCantidad());
@@ -40,27 +40,17 @@ public class MovimientoService {
         // Asociar el producto actualizado al movimiento
         movimiento.setProducto(producto);
 
-        // Establecer la fecha si no viene del frontend
+        // Establecer la fecha si no viene del frontend en android studio
         if (movimiento.getFecha() == null) {
             movimiento.setFecha(LocalDateTime.now());
         }
-
-        // Aquí podrías setear el usuario que realiza el movimiento si estás usando seguridad
-        // movimiento.setUsuario(usuarioActual);
-
-        // Guardar el movimiento
         return movimientoRepository.save(movimiento);
     }
-
-    public List<Movimiento> buscarPorProducto(Producto producto) {
-        return movimientoRepository.findByProducto(producto);
+    //Busca los ultimos movimientos registrados por fecha ingreso
+    public List<Movimiento> ultimos10Movimientos() {
+        return movimientoRepository.findTop10ByOrderByFechaDesc();
     }
-
-    public List<Movimiento> movimientosUltimos10Dias() {
-        LocalDateTime hace10dias = LocalDateTime.now().minusDays(10);
-        return movimientoRepository.findByFechaAfter(hace10dias);
-    }
-
+    //Busca movimientos por rango de fechas dadas por el usuario
     public List<Movimiento> movimientosEntreFechas(LocalDateTime inicio, LocalDateTime fin) {
         return movimientoRepository.findByFechaBetween(inicio, fin);
     }
