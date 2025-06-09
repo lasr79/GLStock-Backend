@@ -12,15 +12,15 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     // Buscar productos cuyo nombre contenga un texto (ignore case)
     List<Producto> findByNombreContainingIgnoreCase(String nombre);
 
-    // Buscar productos por categoría
+    // Buscar productos por categoria
     List<Producto> findByCategoria(Categoria categoria);
 
     // Productos con menor cantidad de stock (ej: top 5)
     List<Producto> findTop5ByOrderByCantidadAsc();
 
-    // Últimos productos agregados 5 productos agregados
+    // Ultimos productos agregados 5 productos agregados
     List<Producto> findTop5ByOrderByFechaIngresoDesc();
 
-    //Buscar por nombre de categoria sin tener que poner todo el nombre de la categoria 
+    //Buscar sin tener que poner todo el nombre de la categoria
     List<Producto> findByCategoriaNombreContainingIgnoreCase(String nombreCategoria);
 }

@@ -51,7 +51,7 @@ public class JwtService {
     //Extrae un campo (claim) especifico del token usando una funcion lambda
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims); // Aplica la función al conjunto de claims
+        return claimsResolver.apply(claims); // Aplica la funcion al conjunto de claims
     }
 
     // Extrae todos los claims del token usando la clave secreta

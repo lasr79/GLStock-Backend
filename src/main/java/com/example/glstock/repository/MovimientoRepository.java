@@ -12,9 +12,9 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
     // Buscar movimientos por producto
     List<Movimiento> findByProducto(Producto producto);
 
-    // Buscar movimientos de los últimos 10 días
+    // Buscar movimientos de los ultimos 10 días
     List<Movimiento> findTop10ByOrderByFechaDesc();
 
-    // Buscar movimientos entre dos fechas específicas
+    // Buscar movimientos entre dos fechas especificas
     List<Movimiento> findByFechaBetween(LocalDateTime inicio, LocalDateTime fin);
 }

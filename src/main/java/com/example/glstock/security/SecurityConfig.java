@@ -48,7 +48,7 @@ public class SecurityConfig {
         };
     }
 
-    // Define el codificador de contraseñas, usando BCrypt (uno de los más seguros)
+    // Define el codificador de contraseñas, usando BCrypt
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
