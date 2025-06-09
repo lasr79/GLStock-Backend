@@ -121,62 +121,93 @@ public class ReporteService {
         PDDocument document = new PDDocument();
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
+
         PDPageContentStream content = new PDPageContentStream(document, page);
         content.setLeading(20f);
-        content.beginText();
-        content.setFont(PDType1Font.HELVETICA_BOLD, 14);
-        content.newLineAtOffset(50, 750);
-        content.showText("Reporte: " + titulo);
-        content.endText();
-        content.close();
-        // Posicion vertical inicial para los productos
-        int yPosition = 700;
 
-        // Itera sobre la lista de productos
+        // Título solo en la primera página
+        content.beginText();
+        content.setFont(PDType1Font.HELVETICA_BOLD, 18);
+        content.newLineAtOffset(220, 770);
+        for (String linea : titulo.split("\n")) {
+            content.showText(linea);
+            content.newLine();
+        }
+        content.endText();
+
+        int y = 730;
+
         for (Producto producto : productos) {
-            // Si no hay espacio suficiente crea una nueva pagina
-            if (yPosition < 120) {
+            if (y < 130) {
+                content.close();
+
                 page = new PDPage(PDRectangle.A4);
                 document.addPage(page);
-                yPosition = 750;
+                content = new PDPageContentStream(document, page);
+                content.setLeading(20f);
+
+                // Subtítulo para siguientes páginas
+                content.beginText();
+                content.setFont(PDType1Font.HELVETICA_BOLD, 14);
+                content.newLineAtOffset(50, 770);
+                content.showText("Listado de productos (continuación)");
+                content.endText();
+
+                y = 730;
             }
-            content = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true);
-            // Inserta el producto (texto + imagen) y actualizar la posicion vertical
-            yPosition = insertarProductoConImagen(document, content, producto, yPosition);
-            // Cierra el stream despues de cada producto
-            content.close();
+
+            y = CartaProducto(document, content, producto, y);
         }
-        // Guardar el contenido en un stream de bytes
+
+        content.close();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         document.save(out);
         document.close();
-        // Retornar el PDF como array de bytes
         return out.toByteArray();
     }
-    // Devuelve el producto y la nueva posicion vertical (yPosition) para seguir escribiendo debajo.
-    private int insertarProductoConImagen(PDDocument document, PDPageContentStream content,
-                                          Producto producto, int yPosition) throws IOException {
-        // Inicia el bloque de texto para escribir el nombre y el stock del producto
-        content.beginText();
-        content.setFont(PDType1Font.HELVETICA, 12);
-        content.newLineAtOffset(50, yPosition);
-        content.showText("Nombre: " + producto.getNombre() + " | Stock: " + producto.getCantidad());
-        content.endText();
 
-        // Intenta cargar y dibujar la imagen del producto
+    private int CartaProducto(PDDocument document, PDPageContentStream content, Producto producto, int y) throws IOException {
+        int cardHeight = 80;
+
+        // Fondo de la tarjeta
+        content.setNonStrokingColor(240);  // gris claro
+        content.addRect(45, y - cardHeight, 500, cardHeight);
+        content.fill();
+        content.setNonStrokingColor(0);  // reset
+
+        // Imagen
+        boolean imagenCargada = false;
         try {
-            BufferedImage img = ImageIO.read(new URL(producto.getUrlImagen())); // Carga la imagen desde la URL
+            BufferedImage img = ImageIO.read(new URL(producto.getUrlImagen()));
             if (img != null) {
-                // Convierte la imagen en un objeto PDF y la dibuja en el documento
-                PDImageXObject pdImage = PDImageXObject.createFromByteArray(document, toByteArray(img), producto.getNombre());
-                content.drawImage(pdImage, 50, yPosition - 60, 60, 60);
+                PDImageXObject image = PDImageXObject.createFromByteArray(document, toByteArray(img), producto.getNombre());
+                content.drawImage(image, 55, y - 70, 60, 60);
+                imagenCargada = true;
             }
         } catch (Exception e) {
-            System.out.println("Error cargando imagen para producto: " + producto.getNombre());
+            System.out.println("Imagen no cargada para: " + producto.getNombre());
         }
-        // Devuelve la nueva posicion vertical para el siguiente producto
-        return yPosition - 80;
+
+        if (!imagenCargada) {
+            content.setStrokingColor(220); // borde claro
+            content.addRect(55, y - 70, 60, 60);
+            content.stroke();
+        }
+
+        // Texto del producto (sin "Nombre: ")
+        content.beginText();
+        content.setFont(PDType1Font.HELVETICA_BOLD, 12);
+        content.newLineAtOffset(130, y - 30);
+        content.showText(producto.getNombre());
+        content.newLine();
+        content.setFont(PDType1Font.HELVETICA, 12);
+        content.showText("Stock: " + producto.getCantidad());
+        content.endText();
+
+        return y - cardHeight - 10;
     }
+
+
     // Convierte una imagen BufferedImage a un arreglo de bytes en formato PNG
     private byte[] toByteArray(BufferedImage image) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -193,7 +224,7 @@ public class ReporteService {
     }
     //Recibe los productos por la categoria indicada y los manda al generador de pdf con el titulo( del contenido del pdf) personalizado
     public byte[] generarReportePorCategoria(List<Producto> productos, String categoria) throws IOException {
-        return generarReporteProductos("Productos de la categoría: " + categoria, productos);
+        return generarReporteProductos("Productos de la categoría:\n" + categoria, productos);
     }
     //Recibe los productos agregados recientemente por fecha de ingreso  y los manda al generador de pdf con el titulo( del contenido del pdf) personalizado
     public byte[] generarReporteRecientes(List<Producto> productos) throws IOException {

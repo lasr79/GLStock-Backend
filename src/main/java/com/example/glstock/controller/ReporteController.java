@@ -28,7 +28,7 @@ public class ReporteController {
     private final ProductoRepository productoRepository;
 
     //Reporte de los 5 productos con menor cantidad (stock)
-    @GetMapping("/procductos/bajo-stock")
+    @GetMapping("/productos/bajo-stock")
     public ResponseEntity<byte[]> generarReporteBajoStock() throws IOException {
         List<Producto> productos = productoService.productosConMenorStock(); // Por ejemplo: stock ≤ 5
 
@@ -40,7 +40,7 @@ public class ReporteController {
                 .body(pdf);
     }
     //Reporte de todos los productos
-    @GetMapping("/procductos/todos")
+    @GetMapping("/productos/todos")
     public ResponseEntity<byte[]> generarReporteTodosProductos() throws IOException {
         List<Producto> productos = productoRepository.findAll(); // directo al repo
         byte[] pdf = reporteService.generarReporteTodos(productos);
@@ -51,7 +51,7 @@ public class ReporteController {
                 .body(pdf);
     }
     //Reporte por nombre de categoria
-    @GetMapping("/procductos/por-categoria")
+    @GetMapping("/productos/por-categoria")
     public ResponseEntity<byte[]> generarReportePorCategoria(@RequestParam String categoria) throws IOException {
         List<Producto> productos = productoService.buscarPorNombreCategoria(categoria);
         byte[] pdf = reporteService.generarReportePorCategoria(productos, categoria);
@@ -65,7 +65,7 @@ public class ReporteController {
                 .body(pdf);
     }
     //Reporte de los ultimos 5 productos agregador por fecha ingreso
-    @GetMapping("/procductos/recientes")
+    @GetMapping("/productos/recientes")
     public ResponseEntity<byte[]> generarReporteProductosRecientes() throws IOException {
         List<Producto> productos = productoService.productosRecientes();
         byte[] pdf = reporteService.generarReporteRecientes(productos);
@@ -83,10 +83,10 @@ public class ReporteController {
             @RequestParam String hasta) throws IOException {
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
+        DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDateTime fechaDesde = LocalDateTime.parse(desde, formatter);
         LocalDateTime fechaHasta = LocalDateTime.parse(hasta, formatter);
-
+        String titulo_pdf=fechaDesde.format(formatter2)+" a "+fechaHasta.format(formatter2)+".pdf";
         List<Movimiento> movimientos = movimientoService.movimientosEntreFechas(fechaDesde, fechaHasta);
 
         byte[] pdf = reporteService.generarReporteMovimientosPorFechas(movimientos, fechaDesde, fechaHasta);
@@ -94,7 +94,7 @@ public class ReporteController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=movimientos_" + desde + "_a_" + hasta + ".pdf")
+                        "attachment; filename=movimientos_" +titulo_pdf)
                 .body(pdf);
     }
 
